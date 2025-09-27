@@ -152,7 +152,7 @@ const Login = () => {
                         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
                     }`}>
                         <p className="text-xs text-gray-600">
-                            Secure login powered by advanced authentication
+                            Secure login powered by Varadharajan
                         </p>
                     </div>
                 </div>
