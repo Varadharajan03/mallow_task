@@ -37,7 +37,29 @@ const getUsers = async (req, res) => {
         // Calculate skip, ensuring it's never negative
         const skip = Math.max(0, (pageNum - 1) * limitNum);
         
+        // Get total count and users with proper error handling
         const total = await User.countDocuments(filter);
+        
+        // Additional validation: if page requested is beyond available data, reset to last valid page
+        const maxPages = Math.ceil(total / limitNum) || 1;
+        if (pageNum > maxPages && total > 0) {
+            pageNum = maxPages;
+            const adjustedSkip = Math.max(0, (pageNum - 1) * limitNum);
+            
+            const users = await User.find(filter)
+                .select('-password')
+                .skip(adjustedSkip)
+                .limit(limitNum);
+            
+            return res.json({
+                data: users,
+                page: pageNum,
+                limit: limitNum,
+                total: total,
+                adjusted: true,
+                message: 'Page adjusted to last available page'
+            });
+        }
         
         const users = await User.find(filter)
             .select('-password')
@@ -51,7 +73,27 @@ const getUsers = async (req, res) => {
             total: total
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        console.error('Error in getUsers:', error);
+        
+        // More specific error messages for different types of errors
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ 
+                message: 'Invalid request parameters', 
+                error: error.message 
+            });
+        }
+        
+        if (error.message.includes('BSON')) {
+            return res.status(400).json({ 
+                message: 'Invalid pagination parameters', 
+                error: 'Page and limit values must be positive integers' 
+            });
+        }
+        
+        res.status(500).json({ 
+            message: 'Server error', 
+            error: error.message 
+        });
     }
 };
 
