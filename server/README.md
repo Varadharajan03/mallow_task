@@ -237,23 +237,7 @@ Ensure all environment variables are properly set in your production environment
 - `JWT_SECRET` - Strong, unique secret for JWT signing
 - `MAIL_USER` & `MAIL_PASS` - Production email credentials
 
-### Recommended Deployment Platforms
-- **Heroku**: Easy deployment with MongoDB Atlas
-- **Railway**: Modern platform with great Node.js support
-- **DigitalOcean App Platform**: Scalable and cost-effective
-- **AWS Elastic Beanstalk**: Enterprise-grade deployment
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the ISC License - see the package.json file for details.
 
 ## 📞 Support
 
