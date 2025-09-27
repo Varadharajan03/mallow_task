@@ -14,14 +14,20 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+    origin: '*', // allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 if (process.env.NODE_ENV !== 'production') {
     app.use(morgan('dev'));
 }
 
-app.use('/api/auth', authRoutes); 
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 
 app.use((err, req, res, next) => {
