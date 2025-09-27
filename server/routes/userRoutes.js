@@ -9,7 +9,6 @@ const {
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 
-// All routes here are protected
 router.route('/').get(protect, getUsers).post(protect, createUser);
 router
     .route('/:id')

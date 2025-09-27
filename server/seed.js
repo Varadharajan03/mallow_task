@@ -2,10 +2,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('./models/userModel');
 
-// Load environment variables from your .env file
 dotenv.config();
 
-// The initial list of users to be added to the database
 const users = [
     {
         first_name: 'George',
@@ -32,7 +30,7 @@ const users = [
         first_name: 'Eve',
         last_name: 'Holt',
         email: 'eve.holt@reqres.in',
-        password: 'cityslicka', // The specific password for the test login user
+        password: 'cityslicka', 
         avatar: 'https://reqres.in/img/faces/4-image.jpg',
     },
     {
@@ -51,36 +49,30 @@ const users = [
     },
 ];
 
-// Function to connect to the database
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
         console.log('MongoDB Connected for Seeding...');
     } catch (err) {
         console.error(`Error connecting to DB: ${err.message}`);
-        process.exit(1); // Exit with failure
+        process.exit(1);
     }
 };
 
-// Function to import the data
 const importData = async () => {
     try {
-        // 1. Clear any existing users to prevent duplicates
         await User.deleteMany();
 
-        // 2. Insert the new users. The 'pre-save' hook in userModel.js
-        // will automatically and securely hash the passwords before they are stored.
         await User.create(users);
 
         console.log('Data Imported Successfully!');
-        process.exit(); // Exit with success
+        process.exit();
     } catch (error) {
         console.error(`Error during data import: ${error}`);
-        process.exit(1); // Exit with failure
+        process.exit(1);
     }
 };
 
-// Main function to run the seeding process
 const runSeed = async () => {
     await connectDB();
     await importData();

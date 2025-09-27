@@ -1,11 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:3001/api', // Your backend server URL
+    baseURL: 'http://localhost:3001/api',
 });
-
-// Axios interceptor to add the JWT token to every request
-// This is a professional pattern that keeps your API calls clean
 api.interceptors.request.use(
     (config) => {
         const user = localStorage.getItem('user');

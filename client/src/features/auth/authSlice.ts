@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/tool
 import api from '../../api/axios';
 import type { AuthResponse } from '../../types';
 
-// Get user from localStorage
 const userString = localStorage.getItem('user');
 const user: AuthResponse | null = userString ? JSON.parse(userString) : null;
 
@@ -20,14 +19,21 @@ const initialState: AuthState = {
     error: null,
 };
 
-// Async thunk for login
 export const login = createAsyncThunk('auth/login', async (userData: { email: string; password: string }, { rejectWithValue }) => {
     try {
         const response = await api.post<AuthResponse>('/auth/login', userData);
         localStorage.setItem('user', JSON.stringify(response.data));
         return response.data;
-    } catch (error: any) {
-        return rejectWithValue(error.response.data.message || 'An error occurred');
+    } catch (error: unknown) {
+        if (
+            typeof error === 'object' &&
+            error !== null &&
+            'response' in error &&
+            typeof (error as { response?: { data?: { message?: string } } }).response?.data?.message === 'string'
+        ) {
+            return rejectWithValue((error as { response: { data: { message: string } } }).response.data.message);
+        }
+        return rejectWithValue('An error occurred');
     }
 });
 

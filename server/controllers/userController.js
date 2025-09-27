@@ -1,13 +1,8 @@
 const User = require('../models/userModel');
 
-// @desc    Get all users
-// @route   GET /api/users
-// @access  Private
 const getUsers = async (req, res) => {
     try {
         const { page = 1, limit = 5, search = '' } = req.query;
-        
-        // Build search filter
         let filter = {};
         if (search) {
             filter = {
@@ -23,15 +18,27 @@ const getUsers = async (req, res) => {
             };
         }
         
-        // Calculate pagination
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
-        const skip = (pageNum - 1) * limitNum;
+        // Validate and sanitize pagination parameters
+        let pageNum = parseInt(page);
+        let limitNum = parseInt(limit);
         
-        // Get total count for pagination
+        // Ensure page is at least 1
+        if (isNaN(pageNum) || pageNum < 1) {
+            pageNum = 1;
+        }
+        
+        // Ensure limit is between 1 and 100 (reasonable bounds)
+        if (isNaN(limitNum) || limitNum < 1) {
+            limitNum = 5;
+        } else if (limitNum > 100) {
+            limitNum = 100;
+        }
+        
+        // Calculate skip, ensuring it's never negative
+        const skip = Math.max(0, (pageNum - 1) * limitNum);
+        
         const total = await User.countDocuments(filter);
         
-        // Get paginated users
         const users = await User.find(filter)
             .select('-password')
             .skip(skip)
@@ -48,9 +55,6 @@ const getUsers = async (req, res) => {
     }
 };
 
-// @desc    Get single user
-// @route   GET /api/users/:id
-// @access  Private
 const getUserById = async (req, res) => {
     const user = await User.findById(req.params.id).select('-password');
     if (user) {
@@ -60,9 +64,7 @@ const getUserById = async (req, res) => {
     }
 };
 
-// @desc    Create a user
-// @route   POST /api/users
-// @access  Private
+
 const nodemailer = require('nodemailer');
 
 const createUser = async (req, res) => {
@@ -74,7 +76,6 @@ const createUser = async (req, res) => {
         return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Generate a temporary password if none provided
     const generatedPassword = password && password.trim() !== ''
         ? password
         : Math.random().toString(36).slice(-8) + 'A1!';
@@ -83,7 +84,7 @@ const createUser = async (req, res) => {
         first_name,
         last_name,
         email,
-        password: generatedPassword, // Hashed by pre-save hook
+        password: generatedPassword, 
         avatar,
         phone,
         job_title,
@@ -97,8 +98,6 @@ const createUser = async (req, res) => {
     if (!user) {
         return res.status(400).json({ message: 'Invalid user data' });
     }
-
-    // Send welcome email with credentials (configure env for real usage)
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -115,17 +114,13 @@ const createUser = async (req, res) => {
             text: `Hello ${first_name},\n\nYour account has been created.\nEmail: ${email}\nTemporary Password: ${generatedPassword}\n\nPlease log in and change your password.`,
         });
     } catch (mailErr) {
-        // Log mail error but don't block user creation
+        console.error('Error sending email:', mailErr);
     }
 
     const userResponse = user.toObject();
     delete userResponse.password;
     res.status(201).json(userResponse);
 };
-
-// @desc    Update a user
-// @route   PUT /api/users/:id
-// @access  Private
 const updateUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
@@ -148,9 +143,6 @@ const updateUser = async (req, res) => {
     }
 };
 
-// @desc    Delete a user
-// @route   DELETE /api/users/:id
-// @access  Private
 const deleteUser = async (req, res) => {
     const result = await User.deleteOne({ _id: req.params.id });
 
